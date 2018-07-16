@@ -31,7 +31,7 @@ fc7 = tf.stop_gradient(fc7)
 # TODO: Add the final layer for traffic sign classification.
 # use this shape for the weight matrix
 shape = (fc7.get_shape().as_list()[-1], 43)
-fc8W = tf.truncated_normal(shape, stddev=1e-2)
+fc8W = tf.Variable(tf.truncated_normal(shape, stddev=1e-2))
 fc8b = tf.Variable(tf.zeros([43]))
 logits = tf.matmul(fc7, fc8W) + fc8b
 
@@ -41,9 +41,9 @@ probs = tf.nn.softmax(logits)
 # be able to reuse some the code.
 one_hot_y = tf.one_hot(y, 43)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_y, logits=logits)
-loss_operation = tf.reduce_mean(cross_entropy )
+loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
-training_operation = optimizer.minimize(loss_operation)
+training_operation = optimizer.minimize(loss_operation, var_list=[fc8W, fc8b])
 
 # Model Evaluation\
 prediction = tf.argmax(logits, 1)
@@ -78,10 +78,7 @@ for i in range(EPOCHS):
             sess.run(training_operation, feed_dict={x: batch_x, y: batch_y})
         print("EPOCH {} ...".format(i+1))
 
-        train_accuracy = evaluate(X_train, y_train, accuracy_operation)
-        train_accuracies.append(train_accuracy)
-        validation_accuracy = evaluate(X_validation, y_validation)
-        validation_accuracies.append(validation_accuracy)
+        validation_accuracy = evaluate(X_validation, y_validation, accuracy_operation)
         print("Validation Accuracy = {:.3f}".format(validation_accuracy))
         print()
 
